@@ -1,0 +1,48 @@
+name: Go application checks
+on:
+  push:
+  pull_request:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ vars.APP_DIRECTORY || '.' }}
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: atolye_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d atolye_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://postgres:ci-only-password@localhost:5432/atolye_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ vars.APP_DIRECTORY || '.' }}/go.mod
+          cache-dependency-path: ${{ vars.APP_DIRECTORY || '.' }}/go.sum
+          cache: true
+      - run: go test -race ./...
+      - run: go vet ./...
+      - run: go run ./cmd/gorev-e2e
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
+      - run: docker build -f deploy/gorev-atolyesi/Dockerfile -t gorev-atolyesi:ci .
+      - uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: gorev-atolyesi:ci
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: browser-screenshots
+          path: ${{ vars.APP_DIRECTORY || '.' }}/outputs/*.png

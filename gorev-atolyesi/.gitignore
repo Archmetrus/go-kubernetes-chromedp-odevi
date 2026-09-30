@@ -1,0 +1,13 @@
+.tools/
+outputs/
+.kubeconfig
+
+data/
+.env
+.env.*
+!.env.example
+backups/
+.secrets/
+deploy/rendered/
+.control/
+__pycache__/

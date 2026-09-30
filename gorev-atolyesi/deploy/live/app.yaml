@@ -1,0 +1,98 @@
+# Render with scripts/canli-hazirla.sh; requires a pre-created Secret.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gorev-ayarlar
+data:
+  APP_ENV: ENVIRONMENT
+  AUTH_ENABLED: 'true'
+  ALLOW_SIGNUP: 'false'
+  APP_ORIGIN: https://APP_DOMAIN
+  ADDR: ':8090'
+  APP_VERSION: RELEASE_VERSION
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gorev-atolyesi
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}
+  selector:
+    matchLabels: {app: gorev-atolyesi}
+  template:
+    metadata:
+      labels: {app: gorev-atolyesi}
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 25
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: app
+          image: APP_IMAGE
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 8090}]
+          envFrom:
+            - configMapRef: {name: gorev-ayarlar}
+            - secretRef: {name: gorev-secrets}
+          readinessProbe:
+            httpGet: {path: /readyz, port: 8090}
+            periodSeconds: 3
+          livenessProbe:
+            httpGet: {path: /healthz, port: 8090}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: '1', memory: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gorev-atolyesi
+spec:
+  selector: {app: gorev-atolyesi}
+  ports: [{port: 80, targetPort: 8090}]
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gorev-atolyesi
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: 'true'
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts: [APP_DOMAIN]
+      secretName: gorev-tls
+  rules:
+    - host: APP_DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gorev-atolyesi
+                port: {number: 80}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gorev-atolyesi
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: {app: gorev-atolyesi}

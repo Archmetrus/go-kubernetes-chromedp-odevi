@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="İşlerini planla, çalışma tezgâhında ilerlet ve tamamla.">
+  <meta name="theme-color" content="#e8eef3">
+  <title>Görev Atölyesi</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/manrope-400.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/fonts/bricolage-600.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/mfa.js" defer></script>
+  <script src="/app.js" defer></script>
+  <script src="/teams.js" defer></script>
+  <script src="/automation.js" defer></script>
+  <link rel="stylesheet" href="/teams.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Görevlere geç</a>
+  <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></symbol>
+    <symbol id="i-focus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-13 4h3m3 0h3m-9 3h3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 8a8 8 0 1 0 0 8M20 3v5h-5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16"/></symbol>
+    <symbol id="i-tray" viewBox="0 0 24 24"><path d="m3 14 3-9h12l3 9v6H3zm0 0h6v3h6v-3h6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></symbol>
+  </svg>
+
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="Görev Atölyesi ana sayfa">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M5 12h11l4 5h15v17H5z"/><path d="M10 6h11l4 5h10M12 25l5 5 11-11"/></svg>
+      <span>görev<br>atölyesi</span>
+    </a>
+    <p class="nav-label">Çalışma alanı</p>
+    <nav aria-label="Çalışma alanı">
+      <button id="teams-open" class="nav-item" hidden>Ekip ağacı ve görevler</button>
+      <button class="nav-item active" data-scope="all"><svg class="icon"><use href="#i-board"/></svg><span>Tüm görevler</span><b id="nav-total">0</b></button>
+      <button class="nav-item" data-scope="focus"><svg class="icon"><use href="#i-focus"/></svg><span>Bugünün odağı</span><b id="nav-focus">0</b></button>
+      <button class="nav-item" data-scope="upcoming"><svg class="icon"><use href="#i-calendar"/></svg><span>Yaklaşan işler</span><b id="nav-upcoming">0</b></button>
+      <button class="nav-item" data-scope="done"><svg class="icon"><use href="#i-check"/></svg><span>Tamamlananlar</span><b id="nav-done">0</b></button>
+    </nav>
+    <div class="side-categories">
+      <p class="nav-label">Kategoriler</p>
+      <button data-category="Go"><i class="category-dot go"></i>Go<span id="cat-go">0</span></button>
+      <button data-category="Kubernetes"><i class="category-dot kubernetes"></i>Kubernetes<span id="cat-kubernetes">0</span></button>
+      <button data-category="chromedp"><i class="category-dot chromedp"></i>chromedp<span id="cat-chromedp">0</span></button>
+      <button data-category="Genel"><i class="category-dot genel"></i>Genel<span id="cat-genel">0</span></button>
+    </div>
+    <div class="side-bottom">
+      <div class="shortcuts"><span><kbd>N</kbd> Yeni görev</span><span><kbd>/</kbd> Görev ara</span></div>
+      <button id="theme-toggle" class="theme-toggle" aria-pressed="false"><svg class="icon"><use href="#i-theme"/></svg><span>Koyu görünüm</span></button>
+      <div class="profile"><span class="avatar">A</span><div><strong id="account-name">Kişisel atölyem</strong><small id="sync-state" role="status">Bağlanıyor…</small></div></div>
+      <button id="admin-open" class="quiet" hidden>Hesap yönetimi</button>
+      <button id="security-open" class="quiet" hidden>İki adımlı doğrulama</button>
+      <button id="logout" class="quiet" hidden>Çıkış yap</button>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar"><span>Atölyem <span class="slash">/</span><strong id="breadcrumb">Genel bakış</strong></span><span id="today"></span></header>
+    <section class="heading">
+      <div><h1 id="page-title">Çalışma tezgâhı</h1><p id="page-description">Planladığın, üzerinde çalıştığın ve tamamladığın işler.</p></div>
+      <div class="heading-actions">
+        <a id="export" class="export-button" href="/api/export/tasks" download title="Tüm güncel görevleri JSON dosyası olarak indir"><svg class="icon"><use href="#i-download"/></svg><span>Tüm görevleri indir</span><span class="file-label">JSON</span></a>
+        <button id="new-task" class="primary"><svg class="icon"><use href="#i-plus"/></svg>Yeni görev</button>
+      </div>
+    </section>
+
+    <section class="overview" aria-label="Görev özeti">
+      <div class="progress-group">
+        <div class="progress-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="49" class="ring-track"/><circle cx="60" cy="60" r="49" class="ring-fill" id="ring-fill" pathLength="100" stroke-dasharray="0 100"/></svg><strong id="progress-percent">0<span>%</span></strong></div>
+        <div><p id="progress-copy">İlk görevini ekleyerek başla.</p><span id="progress-caption">Genel ilerleme</span></div>
+      </div>
+      <div class="summary-counts"><span><i class="dot doing"></i><b id="doing-count">0</b>devam eden</span><span><i class="dot done"></i><b id="done-count">0</b>tamamlanan</span><span class="late-summary"><b id="overdue">0</b>geciken</span></div>
+      <span id="completion" class="sr-only"></span>
+    </section>
+
+    <section class="week-strip" aria-label="Önümüzdeki yedi gün">
+      <div class="week-intro"><svg class="icon"><use href="#i-calendar"/></svg><div><strong>Önümüzdeki 7 gün</strong><span>Teslim tarihine göre göster</span></div></div>
+      <div id="week-days"></div><button id="clear-day" class="quiet" hidden>Tarihi temizle</button>
+    </section>
+
+    <section class="workspace" id="workspace" tabindex="-1">
+      <div class="toolbar">
+        <div class="workspace-title"><h2 id="workspace-title">Tüm görevler</h2><span id="visible-count" class="count-pill">0</span></div>
+        <div class="view-controls" role="group" aria-label="Görev görünümü"><button id="board-view" class="selected" aria-pressed="true"><svg class="icon"><use href="#i-board"/></svg>Pano</button><button id="list-view" aria-pressed="false"><svg class="icon"><use href="#i-list"/></svg>Liste</button></div>
+      </div>
+      <div class="filters">
+        <label class="search"><svg class="icon"><use href="#i-search"/></svg><input id="search" type="search" placeholder="Görevlerde ara" aria-label="Görevlerde ara"><kbd>/</kbd></label>
+        <select id="category-filter" aria-label="Kategori filtresi"><option value="">Tüm kategoriler</option><option>Go</option><option>Kubernetes</option><option>chromedp</option><option>Genel</option></select>
+        <select id="priority-filter" aria-label="Öncelik filtresi"><option value="">Tüm öncelikler</option><option value="high">Yüksek</option><option value="medium">Orta</option><option value="low">Düşük</option></select>
+        <select id="sort" aria-label="Görev sıralaması"><option value="newest">En yeni</option><option value="priority">Önce yüksek öncelik</option><option value="due">Önce teslim tarihi</option><option value="title">Başlığa göre</option></select>
+        <button id="clear-filters" class="icon-button" title="Filtreleri temizle" aria-label="Filtreleri temizle"><svg class="icon"><use href="#i-close"/></svg></button><button id="refresh" class="icon-button" title="Yenile" aria-label="Yenile"><svg class="icon"><use href="#i-refresh"/></svg></button>
+      </div>
+      <div class="data-tools"><label>Görev alanı <select id="storage-scope"><option value="active">Aktif görevler</option><option value="archive">Arşiv</option><option value="trash">Çöp kutusu</option></select></label><button id="import-open" class="quiet">JSON içe aktar</button><span>Değişiklikler 5 saniyede bir kontrol edilir.</span></div>
+      <div id="notice" role="status" aria-live="polite"></div><div id="loading">Görevler yükleniyor…</div>
+      <div class="board" id="board" hidden>
+        <section class="column" data-status="todo" aria-labelledby="todo-title"><div class="column-heading"><h3 id="todo-title"><svg class="icon"><use href="#i-tray"/></svg>Yapılacak<span id="todo-num">0</span></h3><button class="column-add" data-add="todo" aria-label="Yapılacak görev ekle"><svg class="icon"><use href="#i-plus"/></svg></button></div><div id="todo-list" class="task-list"></div></section>
+        <section class="column" data-status="doing" aria-labelledby="doing-title"><div class="column-heading"><h3 id="doing-title"><svg class="icon"><use href="#i-clock"/></svg>Devam ediyor<span id="doing-num">0</span></h3><button class="column-add" data-add="doing" aria-label="Devam eden görev ekle"><svg class="icon"><use href="#i-plus"/></svg></button></div><div id="doing-list" class="task-list"></div></section>
+        <section class="column" data-status="done" aria-labelledby="done-title"><div class="column-heading"><h3 id="done-title"><svg class="icon"><use href="#i-check"/></svg>Tamamlandı<span id="done-num">0</span></h3><button class="column-add" data-add="done" aria-label="Tamamlanan görev ekle"><svg class="icon"><use href="#i-plus"/></svg></button></div><div id="done-list" class="task-list"></div></section>
+      </div>
+      <div id="task-table" class="task-table" hidden></div>
+    </section>
+
+    <section class="templates" aria-labelledby="templates-title">
+      <div class="template-heading"><h2 id="templates-title">Bir şablonla başla</h2><p>Sık kullandığın işler için hazır başlangıçlar.</p></div>
+      <button data-template="Go" class="template"><span class="template-icon go">{ }</span><span><strong>API geliştirme</strong><small>Go</small></span><svg class="icon"><use href="#i-plus"/></svg></button>
+      <button data-template="Kubernetes" class="template"><span class="template-icon kubernetes">⬡</span><span><strong>Dağıtım hazırlığı</strong><small>Kubernetes</small></span><svg class="icon"><use href="#i-plus"/></svg></button>
+      <button data-template="chromedp" class="template"><span class="template-icon chromedp">⌘</span><span><strong>Tarayıcı testi</strong><small>chromedp</small></span><svg class="icon"><use href="#i-plus"/></svg></button>
+    </section>
+    <footer><span>Görev Atölyesi</span><span id="total">0 görev</span></footer>
+  </main>
+
+  <dialog id="editor" aria-labelledby="editor-title">
+    <form id="task-form">
+      <div class="dialog-head"><h2 id="editor-title">Yeni görev</h2><button type="button" id="close-editor" class="icon-button" aria-label="Kapat"><svg class="icon"><use href="#i-close"/></svg></button></div>
+      <label>Görev başlığı<input id="title" name="title" required minlength="3" maxlength="120" placeholder="Örn. Go API için test yaz"></label>
+      <label>Açıklama<textarea id="description" name="description" rows="3" maxlength="2000" placeholder="Tamamlamak için gereken adımlar"></textarea></label>
+      <label class="check-label"><input type="checkbox" id="archived">Arşivde sakla</label>
+      <div class="form-grid">
+        <label>Kategori<select id="category" name="category"><option>Go</option><option>Kubernetes</option><option>chromedp</option><option>Genel</option></select></label>
+        <label>Öncelik<select id="priority" name="priority"><option value="medium">Orta</option><option value="high">Yüksek</option><option value="low">Düşük</option></select></label>
+        <label>Durum<select id="status" name="status"><option value="todo">Yapılacak</option><option value="doing">Devam ediyor</option><option value="done">Tamamlandı</option></select></label>
+        <label>Teslim tarihi<input id="due_date" name="due_date" type="date"></label>
+      </div>
+      <p id="form-error" role="alert"></p><div class="dialog-actions"><button type="button" id="cancel-editor" class="quiet">Vazgeç</button><button id="save-task" class="primary" type="submit">Görevi kaydet</button></div>
+    </form>
+  </dialog>
+  <dialog id="delete-dialog" aria-labelledby="delete-title"><h2 id="delete-title">Çöp kutusuna taşınsın mı?</h2><p id="delete-message"></p><p>Görevi çöp kutusundan geri alabilirsin.</p><div class="dialog-actions"><button id="cancel-delete" class="quiet">Vazgeç</button><button id="confirm-delete" class="danger">Çöp kutusuna taşı</button></div><p id="delete-error" role="alert"></p></dialog>
+  <dialog id="auth-dialog" aria-labelledby="auth-title"><form id="auth-form"><h2 id="auth-title">Atölyene giriş yap</h2><p id="auth-copy">Görevlerini hesabında sakla, kaldığın yerden devam et.</p><label>E-posta<input id="auth-email" type="email" autocomplete="username" required maxlength="254"></label><label>Parola<input id="auth-password" type="password" autocomplete="current-password" required maxlength="72"></label><p id="auth-error" role="alert"></p><div class="dialog-actions"><button id="register" type="button" class="quiet" hidden>Hesap oluştur</button><button id="login" class="primary">Giriş yap</button></div></form></dialog>
+  <dialog id="pending-dialog" aria-labelledby="pending-title"><div class="account-seal" aria-hidden="true">…</div><h2 id="pending-title">Kaydın alındı</h2><p id="pending-copy">Ana yönetici hesabını onayladığında çalışma alanın açılacak.</p><p id="pending-email" class="account-email"></p><form id="verification-form" hidden><label>Doğrulama kodu<input id="verification-code" type="text" autocomplete="one-time-code" autocapitalize="none" spellcheck="false" minlength="32" maxlength="32" pattern="[a-fA-F0-9]{32}" required aria-describedby="verification-help"></label><p id="verification-help">Bu geliştirme kurulumunda iletiler yerel posta kutusuna bırakılır. Kodu iletiden kopyalayabilirsin.</p><div class="dialog-actions"><button id="verification-resend" type="button" class="quiet">Yeni kod iste</button><button id="verification-confirm" class="primary">E-postamı doğrula</button></div><p id="verification-error" role="status"></p></form><p id="pending-error" role="status"></p><div class="dialog-actions"><button id="pending-logout" class="quiet">Çıkış yap</button><button id="pending-refresh" class="primary">Durumu kontrol et</button></div></dialog>
+  <dialog id="accounts-dialog" aria-labelledby="accounts-title"><header class="account-heading"><div><h2 id="accounts-title">Atölyeye katılanlar</h2><p>Kayıt isteklerini incele, hesap erişimini yönet.</p></div><button id="accounts-close" class="quiet">Kapat</button></header><p class="account-note">Onayladığın kullanıcı kendi çalışma alanına erişebilir. Askıya aldığın hesabın açık oturumları kapatılır.</p><div class="account-toolbar"><label>Görünüm<select id="accounts-filter"><option value="pending">Onay bekleyen</option><option value="active">Aktif</option><option value="suspended">Askıda</option><option value="all">Tümü</option></select></label><button id="accounts-refresh" class="quiet">Yenile</button></div><p id="accounts-error" role="status"></p><div id="accounts-list"></div><button id="accounts-next" class="quiet" hidden>Sonraki hesapları yükle</button></dialog>
+  <dialog id="account-confirm-dialog" aria-labelledby="account-confirm-title"><form id="account-confirm-form"><h2 id="account-confirm-title">Hesap erişimini değiştir</h2><p id="account-confirm-copy"></p><label>Mevcut yönetici parolan<input id="admin-password" type="password" autocomplete="current-password" required maxlength="72"></label><p id="account-confirm-error" role="alert"></p><div class="dialog-actions"><button id="account-confirm-cancel" type="button" class="quiet">Vazgeç</button><button id="account-confirm-save" class="primary">Onayla</button></div></form></dialog>
+  <dialog id="import-dialog" aria-labelledby="import-title"><h2 id="import-title">Görevlerini içe aktar</h2><p>Görev Atölyesi JSON dosyasını seç. Kayıtlar yeni görev olarak eklenir; mevcut görevler değişmez.</p><label>JSON dosyası<input id="import-file" type="file" accept=".json,application/json"></label><p id="import-summary" role="status"></p><ul id="import-preview"></ul><div class="dialog-actions"><button id="import-cancel" class="quiet">Vazgeç</button><button id="import-confirm" class="primary" disabled>Görevleri ekle</button></div></dialog>
+  <dialog id="mfa-dialog" aria-labelledby="mfa-title"><h2 id="mfa-title">İki adımlı doğrulama</h2><p id="mfa-copy"></p><form id="mfa-form"><label id="mfa-password-label">Mevcut parolan<input id="mfa-password" type="password" autocomplete="current-password" maxlength="72"></label><div id="mfa-setup-key" hidden><label>Kurulum anahtarı<input id="mfa-secret" readonly autocomplete="off" aria-describedby="mfa-key-help"></label><p id="mfa-key-help">Kimlik doğrulama uygulamana yeni bir hesap ekle. Bu anahtarı gir; zaman tabanlı, 6 haneli kod seç.</p><button id="mfa-copy-key" type="button" class="quiet">Anahtarı kopyala</button></div><label id="mfa-code-label">Uygulama kodu veya kurtarma kodu<input id="mfa-code" autocomplete="one-time-code" maxlength="35" spellcheck="false"></label><button id="mfa-submit" class="primary">Doğrula</button></form><div id="mfa-recovery-box" hidden><p>Bu 10 kurtarma kodu yalnızca şimdi gösterilir. Her biri bir kez kullanılabilir. Güvenli bir yerde sakla.</p><ul id="mfa-recovery-list"></ul><button id="mfa-download" class="quiet">Kodları indir</button><label class="check-label"><input id="mfa-saved" type="checkbox">Kodları güvenli bir yere kaydettim</label><button id="mfa-done" class="primary" disabled>Devam et</button></div><p id="mfa-error" role="status"></p><div class="dialog-actions"><button id="mfa-close" class="quiet">Vazgeç</button><button id="mfa-logout" class="quiet">Çıkış yap</button></div></dialog>
+</body>
+</html>

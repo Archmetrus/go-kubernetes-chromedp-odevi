@@ -1,0 +1,44 @@
+name: Deploy reviewed release
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [staging, production]
+        required: true
+      image:
+        description: Previously tested image reference (prefer @sha256 digest)
+        required: true
+      release:
+        description: Unique lowercase release name, max 40 characters
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        working-directory: ${{ vars.APP_DIRECTORY || '.' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.37.0
+      - name: Deploy after migration
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_BASE64 }}
+          KUBECONFIG: ${{ runner.temp }}/atolye-kubeconfig
+          DEPLOY_CONTEXT: ${{ vars.DEPLOY_CONTEXT }}
+          DEPLOY_ENV: ${{ inputs.environment }}
+          APP_DOMAIN: ${{ vars.APP_DOMAIN }}
+          APP_IMAGE: ${{ inputs.image }}
+          RELEASE_VERSION: ${{ inputs.release }}
+        run: |
+          umask 077
+          printf '%s' "$KUBECONFIG_DATA" | base64 --decode > "$KUBECONFIG"
+          bash scripts/canli-dagit.sh

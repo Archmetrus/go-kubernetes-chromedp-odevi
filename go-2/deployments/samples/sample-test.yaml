@@ -1,0 +1,26 @@
+apiVersion: monitoring.k8s.io/v1alpha1
+kind: SyntheticTest
+metadata:
+  name: example-ecommerce-checkout
+  namespace: default
+spec:
+  url: "https://example.com"
+  schedule: "*/5 * * * *"
+  visualRegression: true
+  driftThreshold: 2.5
+  webhookUrl: "https://automation.mycompany.com/webhooks/robomotion"
+  viewport:
+    width: 1920
+    height: 1080
+  steps:
+    - name: "Ana Sayfaya Git"
+      action: "navigate"
+      target: "https://example.com"
+    - name: "Başlığı Kontrol Et"
+      action: "wait_visible"
+      target: "h1"
+    - name: "Sayfa Başlığını Oku"
+      action: "scrape_text"
+      target: "h1"
+    - name: "Ekran Görüntüsü Al"
+      action: "screenshot"

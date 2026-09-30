@@ -1,0 +1,32 @@
+{
+  "id": "robomotion-flow-e2e-001",
+  "name": "Robomotion Automated E2E Data Scraper",
+  "webhookUrl": "http://my-robomotion-instance.local/api/v1/webhook",
+  "apiKey": "dev-secret-key",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "steps": [
+    {
+      "name": "Navigate to Target Page",
+      "action": "navigate",
+      "target": "https://example.com"
+    },
+    {
+      "name": "Verify Header Element",
+      "action": "wait_visible",
+      "target": "h1"
+    },
+    {
+      "name": "Scrape Header Content",
+      "action": "scrape_text",
+      "target": "h1"
+    },
+    {
+      "name": "Extract Main Paragraph",
+      "action": "scrape_text",
+      "target": "p"
+    }
+  ]
+}

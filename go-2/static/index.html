@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K8s Chromedp — Web Scraping Dashboard</title>
+    <meta name="description" content="Kubernetes Native Chromedp Engine ile web kazıma, ekran görüntüsü ve görsel regresyon aracı.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Lightbox Modal -->
+    <div id="lightboxModal" class="lightbox">
+        <div class="lightbox-backdrop"></div>
+        <div class="lightbox-content">
+            <button class="lightbox-close">&times;</button>
+            <img id="lightboxImage" alt="Tam Ekran Görüntüsü">
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <header class="top-nav">
+        <a class="nav-brand" href="#">
+            <div class="nav-brand-icon">⚡</div>
+            <span class="nav-brand-text">K8s Chromedp</span>
+        </a>
+
+        <nav class="nav-links">
+            <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <a href="#visual-diff" class="nav-item" data-tab="visual-diff">
+                <span class="icon">👁️</span> Visual Diff
+            </a>
+        </nav>
+
+        <div class="nav-right">
+            <div class="status-dot">
+                <span class="pulse-dot"></span>
+                <span id="wsStatus">Bağlanıyor...</span>
+            </div>
+            <div class="api-key-badge">
+                <span>API:</span> <code id="displayApiKey">dev-secret-key</code>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 id="pageTitle">Web Scraping Dashboard</h1>
+            <p class="subtitle">Chromedp · cURL · Scrape.do — Çoklu yöntemle site kazıma ve indirme</p>
+        </div>
+
+        <!-- TAB: DASHBOARD -->
+        <section id="tab-dashboard" class="tab-content active">
+            <!-- URL Input Card -->
+            <div class="card url-section">
+                <span class="metric-label">URL Taraması & Site İndirme</span>
+                <div class="quick-form" style="margin-top: 10px;">
+                    <input type="text" id="instantUrlInput" placeholder="https://example.com">
+                    <button id="btnInstantCapture" class="btn btn-primary">SS Al</button>
+                    <button id="btnFullScrape" class="btn btn-accent">📥 Siteyi İndir & SS Al</button>
+                </div>
+
+                <!-- Options -->
+                <div class="scrape-options-bar">
+                    <div>
+                        <label>Yöntem:</label>
+                        <select id="selectScrapeMode">
+                            <option value="chromedp">Chromedp (JS Render)</option>
+                            <option value="fast_curl">cURL (Statik)</option>
+                            <option value="scrape_do">Scrape.do (Anti-Bot)</option>
+                        </select>
+                    </div>
+                    <div id="containerScrapeDoToken" class="hidden">
+                        <label style="color: var(--warning); font-weight: 600;">Token:</label>
+                        <input type="text" id="inputScrapeDoToken" placeholder="Scrape.do API Token" style="width: 180px; font-family: var(--font-mono);">
+                    </div>
+                    <div>
+                        <label>Görsel:</label>
+                        <select id="selectImageMode">
+                            <option value="with_images">Resimli</option>
+                            <option value="block_images">Resimsiz</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Bekleme:</label>
+                        <select id="selectWaitStrategy">
+                            <option value="domReady">DOM Ready</option>
+                            <option value="networkIdle">Network Idle</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <input type="checkbox" id="checkScrollBottom" checked>
+                        <label for="checkScrollBottom" style="color: var(--text-primary); cursor: pointer;">Kaydır</label>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <input type="checkbox" id="checkIncludePdf" checked>
+                        <label for="checkIncludePdf" style="color: var(--text-primary); cursor: pointer;">PDF</label>
+                    </div>
+                </div>
+
+                <!-- Loading Overlay -->
+                <div id="loadingOverlay" class="loading-overlay hidden">
+                    <div class="loading-spinner"></div>
+                    <span class="loading-text">Site taranıyor...</span>
+                    <span id="loadingTimer" class="loading-timer">0.0s</span>
+                </div>
+            </div>
+
+            <!-- Scrape Result (hidden initially) -->
+            <div id="scrapeDownloadBar" class="card margin-top hidden">
+                <!-- Metrics Bar -->
+                <div id="scrapeMetrics" class="scrape-metrics">
+                    <div class="scrape-metric success">
+                        <span>✓</span> <strong id="metricStatus">Tamamlandı</strong>
+                    </div>
+                    <div class="scrape-metric">
+                        <span>⏱</span> Süre: <strong id="metricDuration">—</strong>
+                    </div>
+                    <div class="scrape-metric">
+                        <span>📦</span> Boyut: <strong id="metricSize">—</strong>
+                    </div>
+                    <div class="scrape-metric">
+                        <span>⚙️</span> Yöntem: <strong id="metricMode">—</strong>
+                    </div>
+                    <div class="scrape-actions">
+                        <button id="btnCompareInDiff" class="btn btn-ghost btn-sm">👁️ Karşılaştır</button>
+                    </div>
+                </div>
+
+                <!-- Download Buttons -->
+                <div class="quick-form" style="margin-bottom: 12px;">
+                    <a id="linkDownloadHtml" href="#" target="_blank" class="btn btn-primary btn-sm">📄 HTML</a>
+                    <a id="linkDownloadPdf" href="#" target="_blank" class="btn btn-accent btn-sm">📕 PDF</a>
+                    <a id="linkDownloadPng" href="#" target="_blank" class="btn btn-primary btn-sm">🖼️ PNG</a>
+                    <button id="btnTogglePreview" class="btn btn-ghost btn-sm">🌐 HTML Önizle</button>
+                    <button id="btnToggleSource" class="btn btn-ghost btn-sm">{ } Kaynak Kodu</button>
+                </div>
+
+                <!-- iframe Preview (hidden) -->
+                <div id="iframePreviewContainer" class="iframe-preview-container hidden">
+                    <iframe id="htmlPreviewFrame" sandbox="allow-same-origin" title="HTML Önizleme"></iframe>
+                </div>
+
+                <!-- HTML Source (hidden) -->
+                <div id="sourceCodeContainer" class="hidden">
+                    <pre id="scrapedHtmlContent" class="code-viewer" style="height: 240px; overflow-y: auto;"></pre>
+                </div>
+            </div>
+
+            <!-- Logs & Preview -->
+            <div class="grid-2col margin-top">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><span class="icon">📡</span> Canlı Akış (WebSocket)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="liveLogs" class="log-viewer">
+                            <div class="log-line info">[SİSTEM] WebSocket akışı dinleniyor...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3><span class="icon">🖼️</span> Ekran Görüntüsü</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="screenshotContainer" class="preview-box">
+                            <p class="placeholder-text">Henüz ekran görüntüsü alınmadı.</p>
+                            <img id="previewImage" class="img-preview hidden" alt="Ekran Görüntüsü">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: VISUAL DIFF -->
+        <section id="tab-visual-diff" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="icon">👁️</span> Visual Diff Slider</h3>
+                    <p>Baseline ve güncel ekran görüntülerini karşılaştırın</p>
+                </div>
+                <div class="card-body">
+                    <div class="diff-slider-wrapper">
+                        <div id="comparisonSlider" class="comparison-slider" style="--clip-pos: 50%;">
+                            <div class="image-before">
+                                <img id="baselineImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'><rect width='800' height='500' fill='%230a0a0a'/><text x='400' y='250' fill='%23555' font-family='sans-serif' font-size='18' text-anchor='middle'>Baseline görsel yükleyin</text></svg>" alt="Baseline">
+                                <span class="label">Baseline</span>
+                            </div>
+                            <div class="image-after">
+                                <img id="currentImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'><rect width='800' height='500' fill='%230a0a0a'/><text x='400' y='250' fill='%23555' font-family='sans-serif' font-size='18' text-anchor='middle'>Mevcut görsel yükleyin</text></svg>" alt="Current">
+                                <span class="label">Mevcut</span>
+                            </div>
+                            <div class="slider-line"></div>
+                            <div class="slider-handle-button">↔</div>
+                            <input type="range" min="0" max="100" value="50" class="slider-handle" id="sliderHandle">
+                        </div>
+
+                        <div class="diff-controls">
+                            <div class="diff-control-group">
+                                <label>Baseline URL:</label>
+                                <input type="text" id="inputBaselineUrl" placeholder="Baseline görsel URL...">
+                            </div>
+                            <div class="diff-control-group">
+                                <label>Mevcut URL:</label>
+                                <input type="text" id="inputCurrentUrl" placeholder="Mevcut görsel URL...">
+                            </div>
+                            <div class="diff-control-group" style="justify-content: flex-end;">
+                                <button id="btnUpdateDiffImages" class="btn btn-primary btn-sm">Güncelle</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

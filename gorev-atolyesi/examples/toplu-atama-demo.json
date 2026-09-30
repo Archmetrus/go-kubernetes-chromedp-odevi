@@ -1,0 +1,24 @@
+{
+  "tasks": [
+    {
+      "team_id": "demo-team-1",
+      "assignee_email": "go-ece@atolye.example.test",
+      "title": "Haftalık API kontrollerini tamamla",
+      "description": "Hata yanıtlarını ve görev durum geçişlerini doğrula.",
+      "category": "Go",
+      "priority": "medium",
+      "status": "todo",
+      "due_date": ""
+    },
+    {
+      "team_id": "demo-team-1",
+      "assignee_email": "go-deniz@atolye.example.test",
+      "title": "Ekip kabul senaryolarını güncelle",
+      "description": "Atama ve yetki değişikliklerini görev geçmişiyle karşılaştır.",
+      "category": "Go",
+      "priority": "high",
+      "status": "todo",
+      "due_date": ""
+    }
+  ]
+}

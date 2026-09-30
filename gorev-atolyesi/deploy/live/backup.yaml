@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: gorev-yedek
+spec:
+  schedule: '0 2 * * *'
+  timeZone: Etc/UTC
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 3600
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 1800
+      template:
+        spec:
+          restartPolicy: Never
+          serviceAccountName: gorev-backup
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            fsGroup: 65532
+            seccompProfile: {type: RuntimeDefault}
+          containers:
+            - name: backup
+              image: BACKUP_IMAGE
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef: {name: gorev-secrets, key: DATABASE_URL}
+                - name: BACKUP_S3_URI
+                  valueFrom:
+                    configMapKeyRef: {name: gorev-backup, key: BACKUP_S3_URI}
+              volumeMounts:
+                - {name: scratch, mountPath: /tmp}
+              resources:
+                requests: {cpu: 100m, memory: 128Mi}
+                limits: {cpu: '1', memory: 512Mi}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: {drop: [ALL]}
+          volumes:
+            - name: scratch
+              emptyDir: {sizeLimit: 2Gi}

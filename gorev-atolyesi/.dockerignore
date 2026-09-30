@@ -1,0 +1,10 @@
+.git
+outputs
+.tools
+.kubeconfig
+
+data
+.env*
+.secrets
+backups
+deploy/rendered

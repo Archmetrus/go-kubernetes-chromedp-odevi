@@ -1,0 +1,39 @@
+# Uygulama ilerlemesi
+
+Son kontrol: `scripts/proje-kontrol.sh` tamamlandı. Tüm Go race testleri/vet, dört tarayıcı senaryosu ve 15 Python testi geçti. Otomasyon teslimi tamamlandı; test sunucuları kapandı. Kullanıcı sonraki işlerde daha kısa çalışma süresi ve daha az token kullanımı istedi; kapsamı dar tutup yalnızca değişikliğe gerekli kontrollerle ilerle.
+
+Son teslim (11 Eylül 2026): kullanıcı önerilen toplu atama/otomasyon adımını onayladı. Migration 7 ile tek grup kapsamlı, hashli, en fazla 30 günlük API anahtarları; MFA+parolayla oluşturma, iptal ve yetki kaybında geçersizleştirme; 200 satır/2 MiB JSON-XLSX önizleme, 15 dakikalık kullanıcı/anahtar kapsamlı draft, atomik toplu atama, kalıcı idempotency ve sonuç kayıtları uygulandı. Web dosya/anahtar/sonuç ekranları, `.sh` üzerinden CLI setup/preview/commit/results ve TUI dosya seçme/onay/sonuç seçenekleri eklendi. [Kullanım](TOPLU-ATAMA-VE-OTOMASYON.md).
+
+Otomasyon doğrulaması: Go parser ve yetki/transaction testleri, eşzamanlı idempotency, audit hatasında rollback, scope/expiry/MFA/revocation, Python anahtar dosyası ve redirect kontrolleri; geçici gerçek sunucuda web dosya yükleme/onay, anahtar üretme/iptal ve Python CLI preview/commit/results/tekrar deneme geçti. Sırlar yazdırılmadı; geçici test DB/sunucuları temizlendi. Kullanıcının asıl DB'si ve demo görev kayıtları değiştirilmedi. PostgreSQL ve Robomotion uygulaması üzerinde gerçek entegrasyon ayrıca yapılmadı.
+
+Öncelikli kalan işler: PostgreSQL üzerinde ekip ve otomasyon doğrulaması; gerçek SMTP/parola sıfırlama; grup mesajlaşması ve dosya paylaşımı. Aşağıdaki önceki teslim notları tarihsel kayıttır; otomasyonun henüz olmadığı ifadeler önceki durumu anlatır.
+
+11 Eylül 2026 — Kullanıcı SMTP/parola sıfırlamadan önce demo hesaplar, hiyerarşi ağacı ve görev atama/takibi istedi. Bu öncelikli ekip adımı uygulandı.
+
+Kimlik teslimleri: web kaydında bekleyen hesap; tek seferlik CLI/TUI admin bootstrap; yönetici web ekranından parola tekrar doğrulamalı onay/askıya alma; oturum iptali, atomik audit, iyimser sürüm kontrolü, DB'de kalıcı onay zorunluluğu. Eski açık sunucu yeni politikayla uyuşmuyorsa API fail-closed çalışır. Migration 3–4 eski hesap/görevleri korur. Ana yönetici hesapları ve bütün ekip görevlerini yönetir; eski kişisel görevlerin sahipliği korunur. [Kullanım ve sınırlar](HESAP-ONAYI.md).
+
+E-posta adımı: hesaba bağlı, hashli, 24 saatlik tek kullanımlı doğrulama kodu; otomatik kayıt iletisi; oturumlu tekrar gönder/POST doğrula; yönetici onayından bağımsız e-posta kapısı; dev posta kutusu CLI/TUI. Geliştirme teslimat tablosu ham kodu geçici içerir ve HTTP'den erişilemez. Gerçek SMTP teslimatı yoktur; yerel kutudaki doğrulama gerçek e-posta sahipliğinin kanıtı değildir. Gerçek SMTP ve parola kurtarma tamamlanmadığından ekip kimlik modunda staging/production başlangıcı reddedilir. SMTP'ye geçerken geliştirme doğrulamaları yeniden değerlendirilmelidir.
+
+Son eklenen: migration 5 ile AES-GCM şifreli TOTP sırları, oturuma bağlı kurulum, tekrar kullanım engeli, hashli 10 tek kullanımlı kurtarma kodu, MFA sonrası oturum yenileme ve yönetim işlemlerinde son 5 dakika içinde MFA zorunluluğu. İlk yönetici adayı önce web üzerinden MFA kurar; üyeler isteğe bağlı kurabilir. CLI/TUI operatör kurtarması MFA'yı sıfırlar ve tüm oturumları iptal eder. Mevcut görsel dilde güvenlik penceresi, mobil görünüm ve kod indirme eklendi. [MFA ve kurtarma rehberi](MFA-VE-KURTARMA.md).
+
+MFA doğrulaması: RFC 6238 vektörleri; yanlış anahtar/kullanıcı bağlamı; dosya izinleri ve kayıp anahtarda başlangıcın reddi; eşzamanlı tek kullanımlı kurtarma, süre aşımı, oturum iptali, hız sınırı ve yönetici MFA kapıları test edildi. Go test/vet ve hedefli race testleri geçti. Gerçek tarayıcıda kurulum, kurtarma koduyla giriş ve hesap onayı; geçici DB ile ortak işletim katmanında başlat/kapat, CLI MFA sıfırlama ve anahtarın yeniden başlatmada korunması doğrulandı. PostgreSQL üzerinde gerçek MFA entegrasyonu henüz çalıştırılmadı.
+
+Son bütünleşik kontrol: `bash scripts/proje-kontrol.sh` başarıyla tamamlandı; tüm Go race testleri (134 saniye), vet, mevcut görev arayüzü E2E, MFA kimlik E2E ve 9 Python işletim testi geçti. Mobil MFA ekranı görsel olarak incelendi. Geçici test sunucuları kapatıldı; kullanıcının gerçek DB'sine veya çalışan sunucusuna müdahale edilmedi.
+
+Tamamlanan: `scripts/atolye.sh` giriş noktası; Python curses terminal arayüzü ve ortak CLI kontrol katmanı; yerel Go sunucusunu derleme/başlatma, süreç kimliği ve pidfd ile durdurma, durum, son loglar, yerel yedek listesi, tarayıcı açma; mevcut kind deployment'ı aç/kapat; profil kilidi; kontrol karakteri ve bilinen secret maskelemesi; Fish belgeleri.
+
+Python curses seçimi: mevcut Linux terminalinde ek pip bağımlılığı olmadan terminal ayarlarını yönetir. Uygulama sunucusu Go olarak kalır. Planın ilerideki `atolye` binary komutları şu an `bash scripts/atolye.sh` üzerinden sağlanır.
+
+Doğrulanan: işletim testleri, TIME_WAIT yeniden başlatma ve aktif dinleyici koruması; gerçek Go sunucusu ve geçici DB ile HTTP 200, kapatma ve DB korunması; PTY ok/Enter/onay/Esc/boyutlandırma/q ve terminal restore. Kimlik katmanında Go race testleri, yetki/oturum testleri, eşzamanlı bootstrap, Chrome kayıt/onay/mobil/koyu tema akışı ve aynı kontrol katmanından etkinleştir/kayıt/listele/bootstrap/yeniden başlat testi geçti. Test sunucuları kapatıldı. Kullanıcının DB'si değiştirilmedi. Kind mutasyonları ve PostgreSQL kimlik akışı gerçek sunucularda çalıştırılmadı.
+
+Kalan işletim hedefleri: ileride eklenecek Compose/worker profili, migration durumu, canlı log akışı, ayrıntılı CLI hata kodları ve cihaz eşleştirmeli API komutları. Mevcut yerel arayüz bunlar hazırmış gibi seçenek sunmaz. `.control/` silinmemelidir: süreç kaydının yanında kalıcı `.control/mfa.key` bulunur. Veritabanı yedekleri anahtarı otomatik içermez; anahtar ayrıca güvenli biçimde yedeklenmelidir.
+
+Doğrulama ek testleri: kodların farklı hesaplarda kullanılamaması, hash saklama, tekrar kayıt iletisi sabitliği, yeniden gönderimde eski kod iptali, süre aşımı, eşzamanlı tek kullanım, onaysız erişim, doğrulanmamış yönetici/üye onayı, GET ile tüketmeme, hız sınırları ve tarayıcıda kod girişi.
+
+Öncelikli ekip teslimi: migration 6; gruplar, tek lider, çoklu üyelik, atama izni, ayrı ekip görevleri ve geçmiş. Ana yönetici tüm ekip işlerini; lider kendi grubunu; üye kendi atamalarını; yetkili üye ayrıca oluşturduğu işleri görür. Lider devri, üye çıkarma ve açık görevlerin lidere aktarımı, hesap askıya almada lider kontrolü eklendi. Mevcut tasarımda ağaç, rol bazlı görev panosu, atama formu, üyelik/yetki ekranı, geçmiş, filtreler ve kapsamlı JSON indirme var. Detaylar: [Ekip ağacı demo rehberi](EKIP-AGACI-DEMO.md).
+
+Demo fiilen oluşturuldu: `data/demo/ekip.db` içinde 10 aktif/doğrulanmış test hesabı, 3 grup, 12 görev; DB ilişkileri ve admin/lider/üye görünürlük sayıları doğrulandı. `scripts/ekip-demo.sh` ortak işletim katmanını `.control/demo` ve 8092 portuyla kullanır; rastgele parolalar ve demo TOTP bilgileri yalnızca 0600 yerel dosyadadır. Normal kayıt/MFA için bypass yoktur. Asıl `data/gorevler.db` değiştirilmedi.
+
+Ekip doğrulaması: tüm Go testleri, vet, ekip yetki/race testleri, üç ayrı rolde ekip tarayıcı testi, eski kişisel görev ve kimlik/MFA tarayıcı testleri geçti. Mevcut 9 Python işletim testi ve yeni demo/Kubernetes ayrımı testi geçti. Demo betiğiyle gerçek başlat/yeniden başlat/health/ready/kapat ve seed tekrarında kayıtların korunması kontrol edildi. Demo sunucusu test sonunda kapalı bırakıldı. Masaüstü yönetici ve mobil koyu üye ekranları görsel olarak incelendi (`outputs/teams-*.png`).
+
+Kalan: gerçek SMTP/parola sıfırlama; PostgreSQL üzerinde ekip entegrasyon doğrulaması; otomasyon token/Excel toplu atama; mesaj/dosya ve davet/onaylı üyelik akışı. Aşama 1 ve geniş ekip planı tümüyle bitmiş değildir; 2. aşamanın temel grup/atama akışı yerel geliştirmede kullanılabilir. Canlı yayın engeli korunur.

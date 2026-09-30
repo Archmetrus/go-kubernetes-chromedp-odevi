@@ -1,0 +1,22 @@
+# Load as a Prometheus rule file; these require your existing scrape targets.
+groups:
+  - name: gorev-atolyesi
+    rules:
+      - alert: AtolyeUnavailable
+        expr: up{job="gorev-atolyesi"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: Görev Atölyesi metrik hedefine erişilemiyor
+      - alert: AtolyeServerErrors
+        expr: sum(rate(atolye_http_errors_total[5m])) / clamp_min(sum(rate(atolye_http_requests_total[5m])), 0.001) > 0.05
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: Görev Atölyesi hata oranı yüzde 5 üzerinde
+      - alert: AtolyeBackupMissing
+        expr: time() - kube_cronjob_status_last_successful_time{cronjob="gorev-yedek"} > 90000
+        for: 10m
+        labels: {severity: critical}
+        annotations:
+          summary: Son başarılı günlük yedek 25 saatten eski

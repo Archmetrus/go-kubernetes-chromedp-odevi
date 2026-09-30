@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gorev-atolyesi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gorev-veri
+  namespace: gorev-atolyesi
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gorev-ayarlar
+  namespace: gorev-atolyesi
+data:
+  ADDR: ':8090'
+  DB_PATH: /data/gorevler.db
+  ALLOW_LOCAL_NETWORK: 'true'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gorev-atolyesi
+  namespace: gorev-atolyesi
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: gorev-atolyesi}
+  template:
+    metadata:
+      labels: {app: gorev-atolyesi}
+    spec:
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: app
+          image: gorev-atolyesi:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8090
+          envFrom:
+            - configMapRef: {name: gorev-ayarlar}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet: {path: /readyz, port: 8090}
+            periodSeconds: 3
+          livenessProbe:
+            httpGet: {path: /healthz, port: 8090}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: gorev-veri}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gorev-atolyesi
+  namespace: gorev-atolyesi
+spec:
+  selector: {app: gorev-atolyesi}
+  ports:
+    - port: 80
+      targetPort: 8090
