@@ -7,7 +7,7 @@ Bu sürüm e-posta/parola ile giriş, kullanıcıya ait görevler, PostgreSQL, m
 Önce varsa çalışan yerel sunucuyu kendi terminalinde Ctrl+C ile kapatın. Mevcut verileri yedeklemek için sunucu kapalıyken tüm `data` klasörünü ayrı bir konuma kopyalayın. Yeni şema eski görevleri silmeden sahiplik, arşiv ve silinme alanları ekler.
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and source scripts/env.fish
 and bash scripts/hesap-olustur.sh
 ```
@@ -54,7 +54,7 @@ Elle görev güncellerken uygulamanın eski sekme korumasını sürdürmek için
 Yönetilen PostgreSQL bağlantısını sağlayıcıdan alın. Staging ve production için ayrı veritabanı/kullanıcı kullanın. TLS için `sslmode=verify-full` ve sağlayıcının CA ayarlarını kullanın; URL/parolayı kaynak dosyasına yazmayın.
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and source scripts/env.fish
 and read --silent --prompt-str 'PostgreSQL URL: ' DATABASE_URL
 and set -gx DATABASE_URL "$DATABASE_URL"
@@ -157,7 +157,7 @@ JSON loglarda istek kimliği, HTTP durum kodu, süre ve sürüm bulunur; parola/
 `deploy/live/alerts.yaml` örnek Prometheus kurallarıdır. Metrik scrape'i, kube-state-metrics ve Alertmanager alıcıları mevcut izleme sistemine bağlanmalıdır. Hata logları mevcut merkezi log sistemine gönderilebilir; harici hata izleme hesabı otomatik kurulmadı.
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/proje-kontrol.sh
 ```
 

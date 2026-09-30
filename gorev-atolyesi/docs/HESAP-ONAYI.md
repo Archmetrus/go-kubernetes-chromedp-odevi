@@ -7,7 +7,7 @@ Bu, ekip planının kimlik aşamasıdır. E-posta kod doğrulama akışı geliş
 ## Terminal menüsünden
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/atolye.sh control tui
 ```
 
@@ -27,7 +27,7 @@ Bootstrap tek seferliktir. İki terminal aynı anda denerse yalnızca biri başa
 Kayıt moduna geç ve başlat:
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/atolye.sh system down --profile local
 and bash scripts/atolye.sh system account-mode --profile local
 and bash scripts/atolye.sh system up --profile local

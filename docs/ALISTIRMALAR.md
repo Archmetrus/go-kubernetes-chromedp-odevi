@@ -5,7 +5,7 @@ Girişten orta seviyeye ilerleyen, Türkçe yorumlu küçük örnekler. Komutlar
 ## Başlangıç (fish)
 
 ```fish
-cd /home/ykk/PROJE/go-kubernetes-chromedp-odevi
+cd (git rev-parse --show-toplevel)
 source scripts/env.fish
 go version
 kubectl version --client
@@ -14,7 +14,7 @@ go mod download
 bash scripts/kontrol.sh
 ```
 
-Go, kubectl ve kind bu bilgisayarda `~/.local/share/odev-tools` dizinindedir. `source scripts/env.fish` yalnızca açık terminalin PATH değerini ayarlar; her yeni terminalde tekrar çalıştırın. chromedp sürümü `go.mod`, bağımlılık doğrulama kayıtları `go.sum` dosyasındadır. Kurulu Google Chrome kullanılır; farklı tarayıcı için `set -gx CHROME_PATH /tarayicinin/tam/yolu` ayarlayın. Otomasyon geçici bir profil kullanır.
+Go, kubectl ve kind PATH üzerinden bulunur; `scripts/kurulum.sh` kullanılırsa `~/.local/share/odev-tools` içine kurulur. `source scripts/env.fish` yalnızca açık terminalin PATH değerini ayarlar; her yeni terminalde tekrar çalıştırın. chromedp sürümü `go.mod`, bağımlılık doğrulama kayıtları `go.sum` dosyasındadır. Kurulu Google Chrome kullanılır; farklı tarayıcı için `set -gx CHROME_PATH /tarayicinin/tam/yolu` ayarlayın. Otomasyon geçici bir profil kullanır.
 
 Aynı araçları başka bir Linux x86_64 ortamında kurmak için `bash scripts/kurulum.sh` kullanılabilir. Bu betik Go, kubectl, kind ve Go modüllerini kurar; Chrome ve çalışan Docker ayrıca gereklidir.
 

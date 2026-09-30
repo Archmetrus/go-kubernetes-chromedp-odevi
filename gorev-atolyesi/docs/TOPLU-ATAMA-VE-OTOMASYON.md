@@ -7,7 +7,7 @@
 Demo kodunu güncelle ve aç:
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/ekip-demo.sh restart
 and bash scripts/ekip-demo.sh accounts
 ```

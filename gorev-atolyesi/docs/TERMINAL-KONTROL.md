@@ -7,7 +7,7 @@ Ekip demosu için `bash scripts/ekip-demo.sh tui` kullanılır. Aynı kontrol ka
 Fish veya Bash içinde proje klasöründen:
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/atolye.sh control tui
 ```
 

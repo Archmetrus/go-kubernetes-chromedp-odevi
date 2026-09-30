@@ -5,7 +5,7 @@
 Ekip ekranındaki **Dosyadan görev ata** ile dosyayı önizle, hataları düzelt ve görevleri tek işlemde ata. Aynı ekranda grup kapsamlı, süreli erişim anahtarı oluşturabilir ve iptal edebilirsin. Web, terminal ve harici otomasyon aynı API'yi kullanır; tekrar denemeler aynı istek anahtarıyla görev çoğaltmaz.
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/ekip-demo.sh restart
 ```
 
@@ -32,7 +32,7 @@ Go ile yazılmış, SQLite kullanan kişisel görev takip uygulaması. Görevler
 Ana yönetici → grup liderleri → üyeler hiyerarşisi, rol bazlı görev atama/takip, üye/yetki yönetimi ve görev geçmişi eklendi. Ayrı demo DB'sinde 10 test hesabı, 3 grup ve 12 görev hazırdır. Mevcut kişisel veriler korunur.
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/ekip-demo.sh seed
 and bash scripts/ekip-demo.sh up
 and bash scripts/ekip-demo.sh accounts
@@ -49,7 +49,7 @@ Güncelle: `bash scripts/ekip-demo.sh restart`. Kapat: `bash scripts/ekip-demo.s
 ## Ok tuşlarıyla terminal kontrolü
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/atolye.sh control tui
 ```
 
@@ -78,7 +78,7 @@ Giriş/çıkış, kullanıcıya ait görevler, arşiv, çöp kutusundan geri alm
 Önceki, konsoldan hesap oluşturulan kullanım (yeni web kayıt akışı için yukarıdaki rehberi kullanın):
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/hesap-olustur.sh
 and env AUTH_ENABLED=true ADDR=127.0.0.1:8091 bash scripts/proje-baslat.sh
 ```
@@ -106,7 +106,7 @@ Bu belgedeki `and`, önceki komut başarılıysa sonraki komutu çalıştırır.
 ### 1. Yerel sunucuyu aç
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and source scripts/env.fish
 and env ADDR=127.0.0.1:8091 bash scripts/proje-baslat.sh
 ```
@@ -131,7 +131,7 @@ Bu komut kişisel geliştirme modudur. Hesaplı kullanım için `AUTH_ENABLED=tr
 ### 1. Docker'ı aç, güncel kodu dağıt ve siteye bağlan
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and source scripts/env.fish
 and sudo systemctl start docker
 and docker info
@@ -152,7 +152,7 @@ Bu README yerel sunucuyu 8091'de açar. `proje-baslat.sh` adres verilmeden çal�
 Başka terminalde durum ve günlükler:
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and source scripts/env.fish
 and set -gx KUBECONFIG "$PWD/.kubeconfig"
 and kubectl --context kind-go-odev -n gorev-atolyesi get pods,deployments,pvc,services
@@ -168,7 +168,7 @@ SQLite için **tek replika + Recreate** stratejisi kullanılır. Güncellemede k
 Kubernetes'teki uygulamayı durdurmak için:
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/proje-kapat.sh
 ```
 
@@ -179,7 +179,7 @@ Docker/API erişilemiyorsa kısa bir açıklama verir; doğrulanamayan kapatmay�
 Yeniden açmak için (imajı tekrar derlemez):
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and source scripts/env.fish
 and sudo systemctl start docker
 and docker info
@@ -194,7 +194,7 @@ Yerel `proje-baslat.sh` sunucusunu ise çalıştığı terminalde **Ctrl+C** ile
 ## Testler
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/proje-kontrol.sh
 ```
 
@@ -238,7 +238,7 @@ Arayüz ve API aynı Go sunucusundan sunulur. Node.js veya ayrı frontend sunucu
 |---|---|---|
 | `ADDR` | `127.0.0.1:8090` | HTTP dinleme adresi |
 | `DB_PATH` | `data/gorevler.db` | SQLite dosyası |
-| `CHROME_PATH` | `/usr/bin/google-chrome-stable` | Test tarayıcısı |
+| `CHROME_PATH` | PATH üzerinden Chrome/Chromium | Test tarayıcısı |
 
 ```fish
 env ADDR=127.0.0.1:8091 bash scripts/proje-baslat.sh

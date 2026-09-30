@@ -7,7 +7,7 @@
 Açık TUI'den `q` ile çıkıp Fish terminalinde:
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/atolye.sh system restart --profile local
 and bash scripts/atolye.sh control tui
 ```

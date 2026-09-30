@@ -9,7 +9,7 @@ Sonraki teslim: [JSON/XLSX toplu atama ve otomasyon anahtarları](TOPLU-ATAMA-VE
 Demo ilk kez oluşturuldu ve DB üzerinden doğrulandı. Aşağıdaki `seed` mevcut demo varsa verileri değiştirmeden çıkar:
 
 ```fish
-cd ~/PROJE/go-kubernetes-chromedp-odevi/gorev-atolyesi
+cd (git rev-parse --show-toplevel)/gorev-atolyesi
 and bash scripts/ekip-demo.sh seed
 and bash scripts/ekip-demo.sh up
 and bash scripts/ekip-demo.sh accounts
